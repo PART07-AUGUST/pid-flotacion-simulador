@@ -19,7 +19,7 @@ TI_S = (56.0, 30.0, 44.0)
 KFF = (0.8, 0.8, 1.0)
 
 # Assumptions used to complete the published empirical transfer functions.
-INITIAL_LEVEL_CM = 25.0
+INITIAL_LEVELS_CM = (30.0, 33.5, 33.0)
 MAX_LEVEL_CM = 45.0
 MIN_PUMP_LPM = 0.0
 MAX_PUMP_LPM = 90.0
@@ -31,7 +31,7 @@ class Scenario:
     feed_lpm: float = 45.0
     feed_step_lpm: float = 8.0
     feed_step_s: int = 180
-    setpoints_after_cm: tuple[float, float, float] = (25.4, 25.0, 25.0)
+    setpoints_after_cm: tuple[float, float, float] = (28.5, 32.5, 32.0)
     setpoint_step_s: int = 450
 
     def validate(self) -> None:
@@ -74,7 +74,7 @@ def run_scenario(
     if mode not in {"pi", "pi_ff"}:
         raise ValueError("El modo debe ser 'pi' o 'pi_ff'.")
 
-    levels = [INITIAL_LEVEL_CM] * 3
+    levels = list(INITIAL_LEVELS_CM)
     commands = [scenario.feed_lpm] * 3
     histories = [deque([scenario.feed_lpm] * delay) for delay in DELAYS_S]
     previous_errors = [0.0] * 3
@@ -93,7 +93,7 @@ def run_scenario(
         )
         setpoints = [
             scenario.setpoints_after_cm[i] if second >= scenario.setpoint_step_s
-            else INITIAL_LEVEL_CM
+            else INITIAL_LEVELS_CM[i]
             for i in range(3)
         ]
         tailings = [history.popleft() for history in histories]
@@ -158,7 +158,7 @@ def compare_scenarios(scenario: Scenario) -> dict:
         "setpoints_cm": [
             [
                 scenario.setpoints_after_cm[i] if k >= scenario.setpoint_step_s
-                else INITIAL_LEVEL_CM
+                else INITIAL_LEVELS_CM[i]
                 for k in range(scenario.duration_s + 1)
             ]
             for i in range(3)
@@ -174,7 +174,7 @@ def compare_scenarios(scenario: Scenario) -> dict:
             "kc_lpm_per_cm": KC_LPM_PER_CM,
             "ti_s": TI_S,
             "kff": KFF,
-            "initial_level_cm": INITIAL_LEVEL_CM,
+            "initial_levels_cm": INITIAL_LEVELS_CM,
             "max_level_cm": MAX_LEVEL_CM,
             "pump_range_lpm": [MIN_PUMP_LPM, MAX_PUMP_LPM],
         },

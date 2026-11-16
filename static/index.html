@@ -31,11 +31,11 @@
         </fieldset>
         <fieldset>
           <legend><span class="section-index">02</span> Consignas finales</legend>
-          <div class="initial-note">Nivel inicial y consigna inicial: <strong>25 cm</strong> en cada celda.</div>
+          <div class="initial-note">Niveles y consignas iniciales aproximados de la figura 14: <strong>30 / 33,5 / 33 cm</strong>.</div>
           <div class="cell-inputs">
-            <label>Celda 1 <span>cm</span><input name="sp1" type="number" min="5" max="40" step="0.1" value="25.4" required></label>
-            <label>Celda 2 <span>cm</span><input name="sp2" type="number" min="5" max="40" step="0.1" value="25" required></label>
-            <label>Celda 3 <span>cm</span><input name="sp3" type="number" min="5" max="40" step="0.1" value="25" required></label>
+            <label>Celda 1 <span>cm</span><input name="sp1" type="number" min="5" max="40" step="0.1" value="28.5" required></label>
+            <label>Celda 2 <span>cm</span><input name="sp2" type="number" min="5" max="40" step="0.1" value="32.5" required></label>
+            <label>Celda 3 <span>cm</span><input name="sp3" type="number" min="5" max="40" step="0.1" value="32" required></label>
           </div>
           <label>Instante del cambio <span>s</span><input name="setpoint_step_s" type="number" min="0" max="899" step="1" value="450" required></label>
         </fieldset>
@@ -104,7 +104,7 @@
         </div>
       </section>
 
-      <section class="assumptions"><strong>Alcance y supuestos</strong><p>Esta es una simulación del nivel y los caudales, no una reproducción de las mediciones del artículo. Se adoptan como supuestos: nivel inicial de 25 cm, altura máxima de 45 cm, caudal nominal de 45 L/min, bombas entre 0 y 90 L/min y la misma magnitud de ganancia para perturbaciones de entrada y salida. No se modelan recuperación, ley de concentrado ni cinética mineral. El estudio utiliza PI; la acción derivativa es cero.</p></section>
+      <section class="assumptions"><strong>Alcance y supuestos</strong><p>Esta es una simulación del nivel y los caudales, no una reproducción de las mediciones del artículo. Los niveles iniciales de 30 / 33,5 / 33 cm y las consignas finales de 28,5 / 32,5 / 32 cm son lecturas aproximadas de la figura 14; no están tabulados en el artículo. La perturbación externa de +8 L/min es un ensayo propio. También se asumen altura máxima de 45 cm, bombas entre 0 y 90 L/min y la misma magnitud de ganancia para perturbaciones de entrada y salida. No se modelan recuperación, ley de concentrado ni cinética mineral. El estudio utiliza PI; la acción derivativa es cero.</p></section>
       <footer>SIMULADOR DE CONTROL DE NIVEL <span>·</span> QUINTANILLA ET AL., METHODSX 10 (2023) 102081 <span>·</span> RESULTADOS SIMULADOS</footer>
     </main>
   </div>

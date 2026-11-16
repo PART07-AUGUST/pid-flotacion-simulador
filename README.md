@@ -20,7 +20,7 @@ La implementación discreta usa `dt = 1 s`, `Qentrada,2 = Qcolas,1` y `Qentrada,
 
 Para PI solo, `Kff_i = 0`. Para PI + AA, `Kff = (0.8, 0.8, 1)`. Las ganancias finales publicadas son `Kc = (-62, -76, -85) L/(min·cm)` y `Ti = (56, 30, 44) s`. La acción derivativa es cero en el artículo. La forma incremental hace persistir la corrección de un salto de caudal. Se aplica integración condicional cuando la bomba llega a un límite.
 
-**Supuestos necesarios para completar el modelo:** nivel inicial y consignas iniciales de 25 cm, altura máxima de 45 cm, caudal nominal de 45 L/min, capacidad de cada bomba de 0 a 90 L/min y magnitud simétrica de la ganancia identificada para perturbaciones de entrada y salida. El artículo no aporta todos esos valores como parámetros de una simulación reproducible. Por ello, las curvas y los IAE de esta aplicación son **resultados simulados**, no los datos experimentales ni las cifras de su figura 14. No se modelan recuperación, ley de concentrado ni cinética mineral.
+**Supuestos necesarios para completar el modelo:** los niveles iniciales de 30 / 33,5 / 33 cm y las consignas finales de 28,5 / 32,5 / 32 cm son lecturas aproximadas de la figura 14, no valores numéricos tabulados. El ejemplo incorpora un cambio externo de alimentación de +8 L/min a los 180 s para ilustrar el rechazo de perturbaciones; el artículo mantuvo la alimentación de la primera celda en 45 L/min en su ensayo de validación. Se suponen altura máxima de 45 cm, capacidad de cada bomba de 0 a 90 L/min y magnitud simétrica de la ganancia identificada para perturbaciones de entrada y salida. El artículo no aporta todos esos valores como parámetros de una simulación reproducible. Por ello, las curvas y los IAE de esta aplicación son **resultados simulados**, no los datos experimentales ni las cifras de su figura 14. No se modelan recuperación, ley de concentrado ni cinética mineral.
 
 ## Ejecutar en Windows
 
@@ -40,7 +40,7 @@ Abrir <http://127.0.0.1:8000>. Para detener el servidor, presionar `Ctrl+C`. Si 
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
 ```
 
-Se verifican el equilibrio, el signo y retardo de la respuesta, la conexión en serie, los límites y la comparación IAE del escenario predeterminado.
+Se verifican el equilibrio, el signo y retardo de la respuesta, la conexión en serie, los límites, la integración del IAE y el efecto de la alimentación anticipativa sobre la orden de bomba. Una mejora de IAE en todas las celdas no se impone como propiedad universal: depende de cada escenario.
 
 ## Publicar en Render
 

@@ -20,7 +20,7 @@ class SimulationRequest(BaseModel):
     feed_lpm: float = Field(default=45.0, ge=20, le=60)
     feed_step_lpm: float = Field(default=8.0, ge=-15, le=15)
     feed_step_s: int = Field(default=180, ge=0)
-    setpoints_after_cm: tuple[float, float, float] = (25.4, 25.0, 25.0)
+    setpoints_after_cm: tuple[float, float, float] = (28.5, 32.5, 32.0)
     setpoint_step_s: int = Field(default=450, ge=0)
 
 
