@@ -5,7 +5,11 @@ const errorBox = document.getElementById("form-error");
 const runStatus = document.getElementById("run-status");
 const downloadButton = document.getElementById("download-csv");
 const runButton = form.querySelector(".run-button");
+const moduleButtons = [...document.querySelectorAll(".module-button")];
+const flowMode = document.getElementById("flow-mode");
+const flowTime = document.getElementById("flow-time");
 let latestResult = null;
+let activeModule = "simulation";
 
 function scenarioFromForm() {
   const values = new FormData(form);
@@ -48,7 +52,12 @@ async function executeSimulation(event) {
       const detail = payload.detail;
       throw new Error(typeof detail === "string" ? detail : "Comprueba los valores e inténtalo de nuevo.");
     }
+    const firstRun = latestResult === null;
     latestResult = payload;
+    flowTime.max = String(payload.scenario.duration_s);
+    flowTime.value = String(firstRun
+      ? Math.min(payload.scenario.feed_step_s, payload.scenario.duration_s)
+      : Math.min(Number(flowTime.value), payload.scenario.duration_s));
     render(payload);
     downloadButton.disabled = false;
     runStatus.textContent = `Ensayo simulado · ${payload.scenario.duration_s} s · Δt = 1 s`;
@@ -74,17 +83,54 @@ function render(result) {
     document.getElementById(`iae-ff-${index}`).textContent = number(ffIae, 2);
     document.getElementById(`final-level-${index}`).textContent = `${number(ff.final_levels_cm[i], 3)} cm al final`;
 
-    plot(document.getElementById(`level-${index}`), result.time_s, [
-      { values: pi.levels_cm[i], color: "#3584c7" },
-      { values: ff.levels_cm[i], color: "#28bea7" },
-      { values: result.setpoints_cm[i], color: "#c8a44c", dashed: true }
-    ], result.scenario);
-    plot(document.getElementById(`flow-${index}`), result.time_s, [
-      { values: pi.tailings_lpm[i], color: "#3584c7" },
-      { values: ff.tailings_lpm[i], color: "#28bea7" },
-      { values: ff.inlets_lpm[i], color: "#c8a44c", dashed: true }
-    ], result.scenario);
+    if (activeModule === "simulation") {
+      plot(document.getElementById(`level-${index}`), result.time_s, [
+        { values: pi.levels_cm[i], color: "#3584c7" },
+        { values: ff.levels_cm[i], color: "#28bea7" },
+        { values: result.setpoints_cm[i], color: "#c8a44c", dashed: true }
+      ], result.scenario);
+    }
+    if (activeModule === "flow") {
+      plot(document.getElementById(`flow-${index}`), result.time_s, [
+        { values: pi.tailings_lpm[i], color: "#3584c7" },
+        { values: ff.tailings_lpm[i], color: "#28bea7" },
+        { values: result.modes[flowMode.value].inlets_lpm[i], color: "#c8a44c", dashed: true }
+      ], result.scenario);
+    }
   }
+  renderFlow(result);
+}
+
+function renderFlow(result) {
+  const second = Math.min(Number(flowTime.value), result.scenario.duration_s);
+  const mode = result.modes[flowMode.value];
+  document.getElementById("flow-inlet-legend").textContent = flowMode.value === "pi" ? "PI" : "PI + AA";
+  document.getElementById("flow-time-label").textContent = `${second} s`;
+  document.getElementById("flow-feed").textContent = number(result.feed_lpm[second], 2);
+  for (let i = 0; i < 3; i++) {
+    const index = i + 1;
+    document.getElementById(`flow-level-${index}`).textContent = `${number(mode.levels_cm[i][second], 3)} cm`;
+    document.getElementById(`flow-inlet-${index}`).textContent = `${number(mode.inlets_lpm[i][second], 2)} L/min`;
+    document.getElementById(`flow-command-${index}`).textContent = `${number(mode.commands_lpm[i][second], 2)} L/min`;
+    document.getElementById(`flow-tailings-${index}`).textContent = number(mode.tailings_lpm[i][second], 2);
+  }
+  const events = [];
+  if (second === result.scenario.feed_step_s) events.push("cambio de alimentación");
+  if (second === result.scenario.setpoint_step_s) events.push("cambio de consigna");
+  document.getElementById("flow-event").textContent = events.length
+    ? `Segundo ${second}: ${events.join(" y ")}. La orden de bomba y el caudal real pueden diferir por el retardo.`
+    : `Segundo ${second}: caudales reales y niveles calculados para ${flowMode.value === "pi" ? "PI" : "PI + AA"}.`;
+}
+
+function showModule(module) {
+  activeModule = module;
+  for (const button of moduleButtons) {
+    const selected = button.dataset.module === module;
+    button.classList.toggle("active", selected);
+    button.setAttribute("aria-pressed", String(selected));
+    document.getElementById(button.getAttribute("aria-controls")).hidden = !selected;
+  }
+  if (latestResult) render(latestResult);
 }
 
 function plot(canvas, times, lines, scenario) {
@@ -190,6 +236,11 @@ function downloadCSV() {
 
 form.addEventListener("submit", executeSimulation);
 downloadButton.addEventListener("click", downloadCSV);
+for (const button of moduleButtons) {
+  button.addEventListener("click", () => showModule(button.dataset.module));
+}
+flowTime.addEventListener("input", () => { if (latestResult) renderFlow(latestResult); });
+flowMode.addEventListener("change", () => { if (latestResult) render(latestResult); });
 let resizeTimer;
 window.addEventListener("resize", () => {
   clearTimeout(resizeTimer);

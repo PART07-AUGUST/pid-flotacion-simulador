@@ -2,6 +2,14 @@
 
 Aplicación web en español que compara control **PI** y **PI con alimentación anticipativa (PI + AA)** para tres celdas en serie. El motor está escrito en Python; la interfaz permite modificar consignas y alimentación, examinar seis gráficas y descargar los datos en CSV. El mismo `app.py` se ejecuta localmente y en Render.
 
+## Tres módulos visibles en la interfaz
+
+- **Simulación:** configura el ensayo en el panel lateral, ejecuta ambos controladores, compara el IAE y observa las tres curvas de nivel. Desde aquí se descarga el CSV.
+- **Modelo matemático:** presenta la función de transferencia, el balance de nivel, la ley PI + alimentación anticipativa, el IAE, los parámetros por celda y los supuestos.
+- **Flujo de celdas:** muestra el recorrido de la alimentación y de las colas. Permite escoger PI o PI + AA y mover un control de tiempo para leer, en un segundo concreto, los niveles, entradas, órdenes de bomba y caudales reales. También muestra las tres gráficas de caudal.
+
+Los tres módulos usan los mismos resultados calculados por Python al ejecutar el ensayo. Al cambiar de módulo no se recalcula el modelo; al pulsar **Ejecutar simulación** sí se calculan de nuevo ambos escenarios.
+
 ## Base matemática y procedencia
 
 Quintanilla, P., Navia, D., Moreno, F., Neethling, S. J. y Brito-Parada, P. R. (2023). *A methodology to implement a closed-loop feedback-feedforward level control in a laboratory-scale flotation bank using peristaltic pumps*. MethodsX, **10**, 102081. <https://doi.org/10.1016/j.mex.2023.102081>

@@ -51,6 +51,13 @@
     </aside>
 
     <main class="main">
+      <nav class="module-nav" aria-label="Módulos de la aplicación">
+        <button class="module-button active" type="button" data-module="simulation" aria-controls="module-simulation" aria-pressed="true"><span>01</span> Simulación</button>
+        <button class="module-button" type="button" data-module="math" aria-controls="module-math" aria-pressed="false"><span>02</span> Modelo matemático</button>
+        <button class="module-button" type="button" data-module="flow" aria-controls="module-flow" aria-pressed="false"><span>03</span> Flujo de celdas</button>
+      </nav>
+
+      <div id="module-simulation" class="module-panel">
       <section class="hero">
         <div class="hero-copy">
           <div class="eyebrow"><span class="accent-line"></span> BANCO DE FLOTACIÓN · MODELO DINÁMICO</div>
@@ -84,28 +91,61 @@
           <article class="chart-card"><div class="chart-top"><h3>Celda 3</h3><span id="final-level-3">—</span></div><canvas id="level-3" role="img" aria-label="Gráfica de nivel de la celda 3"></canvas></article>
         </div>
       </section>
+      </div>
 
+      <div id="module-flow" class="module-panel" hidden>
+      <section class="module-heading">
+        <div class="eyebrow">MÓDULO 03 · FLUJO DE CELDAS</div>
+        <h2>Cómo viaja el caudal por el banco</h2>
+        <p>La alimentación externa entra a la primera celda. El caudal real de colas de cada bomba, después de su retardo, alimenta la celda siguiente. Selecciona un segundo para inspeccionar los valores de la simulación.</p>
+      </section>
+      <section class="flow-inspector" aria-label="Flujo entre las tres celdas">
+        <div class="inspector-toolbar">
+          <label>Control mostrado <select id="flow-mode"><option value="pi_ff">PI + alimentación anticipativa</option><option value="pi">PI</option></select></label>
+          <label>Instante <strong id="flow-time-label">—</strong><input id="flow-time" type="range" min="0" max="900" value="180" step="1" aria-label="Segundo de la simulación"></label>
+        </div>
+        <p id="flow-event" class="flow-event" aria-live="polite">Esperando los resultados de la simulación…</p>
+        <div class="flow-chain">
+          <div class="flow-stream"><span>ALIMENTACIÓN</span><strong id="flow-feed">—</strong><small>L/min →</small></div>
+          <article class="flow-cell"><div class="flow-cell-title"><span>01</span><h3>Celda 1</h3></div><dl><div><dt>Nivel</dt><dd id="flow-level-1">—</dd></div><div><dt>Entrada</dt><dd id="flow-inlet-1">—</dd></div><div><dt>Orden de bomba</dt><dd id="flow-command-1">—</dd></div><div><dt>Retardo</dt><dd>7 s</dd></div></dl></article>
+          <div class="flow-stream"><span>COLAS 1 → ENTRADA 2</span><strong id="flow-tailings-1">—</strong><small>L/min →</small></div>
+          <article class="flow-cell"><div class="flow-cell-title"><span>02</span><h3>Celda 2</h3></div><dl><div><dt>Nivel</dt><dd id="flow-level-2">—</dd></div><div><dt>Entrada</dt><dd id="flow-inlet-2">—</dd></div><div><dt>Orden de bomba</dt><dd id="flow-command-2">—</dd></div><div><dt>Retardo</dt><dd>6 s</dd></div></dl></article>
+          <div class="flow-stream"><span>COLAS 2 → ENTRADA 3</span><strong id="flow-tailings-2">—</strong><small>L/min →</small></div>
+          <article class="flow-cell"><div class="flow-cell-title"><span>03</span><h3>Celda 3</h3></div><dl><div><dt>Nivel</dt><dd id="flow-level-3">—</dd></div><div><dt>Entrada</dt><dd id="flow-inlet-3">—</dd></div><div><dt>Orden de bomba</dt><dd id="flow-command-3">—</dd></div><div><dt>Retardo</dt><dd>3 s</dd></div></dl></article>
+          <div class="flow-stream"><span>COLAS FINALES</span><strong id="flow-tailings-3">—</strong><small>L/min → salida</small></div>
+        </div>
+        <p class="flow-note">La <strong>orden</strong> es el caudal solicitado a la bomba; las <strong>colas</strong> son el caudal real después del retardo. El nivel cambia según la diferencia entre entrada y colas.</p>
+      </section>
       <section class="chart-section flow-section">
-        <div class="section-heading"><div><div class="eyebrow">VARIABLE MANIPULADA Y PERTURBACIÓN</div><h2>Caudales <span>L/min</span></h2></div><div class="legend"><span><i class="swatch blue"></i> Colas PI</span><span><i class="swatch teal"></i> Colas PI + AA</span><span><i class="swatch gold dash"></i> Entrada PI + AA</span></div></div>
+        <div class="section-heading"><div><div class="eyebrow">VARIABLE MANIPULADA Y PERTURBACIÓN</div><h2>Caudales <span>L/min</span></h2></div><div class="legend"><span><i class="swatch blue"></i> Colas PI</span><span><i class="swatch teal"></i> Colas PI + AA</span><span><i class="swatch gold dash"></i> Entrada <span id="flow-inlet-legend">PI + AA</span></span></div></div>
         <div class="chart-grid">
           <article class="chart-card"><div class="chart-top"><h3>Celda 1</h3><span>Q<sub>1</sub> → Celda 2</span></div><canvas id="flow-1" role="img" aria-label="Gráfica de caudales de la celda 1"></canvas></article>
           <article class="chart-card"><div class="chart-top"><h3>Celda 2</h3><span>Q<sub>2</sub> → Celda 3</span></div><canvas id="flow-2" role="img" aria-label="Gráfica de caudales de la celda 2"></canvas></article>
           <article class="chart-card"><div class="chart-top"><h3>Celda 3</h3><span>Q<sub>3</sub> → Salida</span></div><canvas id="flow-3" role="img" aria-label="Gráfica de caudales de la celda 3"></canvas></article>
         </div>
       </section>
+      </div>
 
+      <div id="module-math" class="module-panel" hidden>
+      <section class="module-heading">
+        <div class="eyebrow">MÓDULO 02 · MODELO MATEMÁTICO</div>
+        <h2>De las ecuaciones a la respuesta</h2>
+        <p>El modelo se evalúa cada segundo. La ganancia, los retardos y la sintonización PI proceden del artículo; los límites y condiciones iniciales son supuestos de esta simulación.</p>
+      </section>
       <section class="method-card">
-        <div class="method-intro"><div class="eyebrow">BASE CIENTÍFICA</div><h2>Modelo y sintonización</h2><p>Los valores de ganancia, retardo y PI proceden de la identificación experimental del artículo. La simulación convierte esas relaciones a pasos de un segundo y conecta las celdas por sus caudales.</p><p><strong>Modelo matemático:</strong> calcula el nuevo nivel y la orden PI de cada celda. <strong>Flujo de celdas:</strong> aplica los retardos y pasa las colas de una celda a la siguiente. <strong>Simulación:</strong> repite ambos cálculos cada segundo para PI y PI + AA, y acumula el IAE.</p><a href="https://doi.org/10.1016/j.mex.2023.102081" target="_blank" rel="noopener">Leer artículo científico ↗</a></div>
+        <div class="method-intro"><div class="eyebrow">BASE CIENTÍFICA</div><h2>Modelo y sintonización</h2><p>La bomba de colas tiene una respuesta integradora con ganancia negativa: al aumentar la extracción, disminuye el nivel. El balance discreto suma la entrada y resta las colas.</p><p>El PI compara la consigna con el nivel. La alimentación anticipativa añade una corrección cuando cambia el caudal de entrada. Se aplican límites a la bomba y al nivel.</p><a href="https://doi.org/10.1016/j.mex.2023.102081" target="_blank" rel="noopener">Leer artículo científico ↗</a></div>
         <div class="method-details">
           <div class="formula"><span>MODELO DE CADA CELDA</span><code>G<sub>i</sub>(s) = −0,001018 · e<sup>−θ<sub>i</sub>s</sup> / s</code></div>
           <div class="formula"><span>BALANCE DISCRETO · Δt = 1 s</span><code>h<sub>i</sub>[k+1] = h<sub>i</sub>[k] + 0,001018 · (Q<sub>entrada,i</sub>[k] − Q<sub>colas,i</sub>[k])</code></div>
           <div class="formula"><span>FLUJO ENTRE CELDAS</span><code>Q<sub>entrada,2</sub> = Q<sub>colas,1</sub> ; Q<sub>entrada,3</sub> = Q<sub>colas,2</sub></code></div>
           <div class="formula"><span>CONTROL PI + ALIMENTACIÓN ANTICIPATIVA</span><code>Δu<sub>i</sub> = K<sub>c,i</sub> · (Δe<sub>i</sub> + e<sub>i</sub>/T<sub>i,i</sub>) + K<sub>ff,i</sub> · ΔQ<sub>entrada,i</sub></code></div>
+          <div class="formula"><span>ERROR ABSOLUTO INTEGRAL</span><code>IAE<sub>i</sub> = Σ |SP<sub>i</sub>[k] − h<sub>i</sub>[k]| · 1 s</code></div>
           <table><thead><tr><th>Parámetro</th><th>Celda 1</th><th>Celda 2</th><th>Celda 3</th></tr></thead><tbody><tr><td>Retardo θ (s)</td><td>7</td><td>6</td><td>3</td></tr><tr><td>K<sub>c</sub> (L/min·cm)</td><td>−62</td><td>−76</td><td>−85</td></tr><tr><td>T<sub>i</sub> (s)</td><td>56</td><td>30</td><td>44</td></tr><tr><td>K<sub>ff</sub></td><td>0,8</td><td>0,8</td><td>1,0</td></tr></tbody></table>
         </div>
       </section>
 
       <section class="assumptions"><strong>Alcance y supuestos</strong><p>Esta es una simulación del nivel y los caudales, no una reproducción de las mediciones del artículo. Los niveles iniciales de 30 / 33,5 / 33 cm y las consignas finales de 28,5 / 32,5 / 32 cm son lecturas aproximadas de la figura 14; no están tabulados en el artículo. La perturbación externa de +8 L/min es un ensayo propio. También se asumen altura máxima de 45 cm, bombas entre 0 y 90 L/min y la misma magnitud de ganancia para perturbaciones de entrada y salida. No se modelan recuperación, ley de concentrado ni cinética mineral. El estudio utiliza PI; la acción derivativa es cero.</p></section>
+      </div>
       <footer>SIMULADOR DE CONTROL DE NIVEL <span>·</span> QUINTANILLA ET AL., METHODSX 10 (2023) 102081 <span>·</span> RESULTADOS SIMULADOS</footer>
     </main>
   </div>
