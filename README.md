@@ -1,14 +1,14 @@
 # Simulador de control de nivel en tres celdas de flotación
 
-Aplicación web en español que compara control **PI** y **PI con alimentación anticipativa (PI + AA)** para tres celdas en serie. El motor está escrito en Python; la interfaz permite modificar consignas y alimentación, examinar seis gráficas y descargar los datos en CSV. El mismo `app.py` se ejecuta localmente y en Render.
+Aplicación web en español que compara control **PI** y **PI con alimentación anticipativa (PI + AA)** para tres celdas en serie. El motor está escrito en Python y la interfaz en **React con JSX**. Permite modificar consignas y alimentación, examinar seis gráficas y descargar los datos en CSV. El mismo `app.py` se ejecuta localmente y en Render.
 
 ## Tres módulos visibles en la interfaz
 
-- **Simulación:** configura el ensayo en el panel lateral, ejecuta ambos controladores, compara el IAE y observa las tres curvas de nivel. Desde aquí se descarga el CSV.
+- **Simulación:** configura el ensayo, ejecuta ambos controladores, compara el IAE y observa las tres curvas de nivel. Desde aquí se descarga el CSV.
 - **Modelo matemático:** presenta la función de transferencia, el balance de nivel, la ley PI + alimentación anticipativa, el IAE, los parámetros por celda y los supuestos.
-- **Flujo de celdas:** muestra el recorrido de la alimentación y de las colas. Permite escoger PI o PI + AA y mover un control de tiempo para leer, en un segundo concreto, los niveles, entradas, órdenes de bomba y caudales reales. También muestra las tres gráficas de caudal.
+- **Flujo de celdas:** muestra un banco esquemático con el nivel de pulpa, bombas y tuberías. Permite escoger PI o PI + AA y mover un control de tiempo para leer, en un segundo concreto, los niveles, entradas, órdenes de bomba y caudales reales. También muestra las tres gráficas de caudal.
 
-Los tres módulos usan los mismos resultados calculados por Python al ejecutar el ensayo. Al cambiar de módulo no se recalcula el modelo; al pulsar **Ejecutar simulación** sí se calculan de nuevo ambos escenarios.
+Los tres módulos usan los mismos resultados calculados por Python al ejecutar el ensayo. Al cambiar de módulo no se recalcula el modelo; al pulsar **Ejecutar simulación** sí se calculan de nuevo ambos escenarios. Cada vista tiene una URL interna compartible: `/#simulation`, `/#model` y `/#flow`.
 
 ## Base matemática y procedencia
 
@@ -36,7 +36,7 @@ El código divide el motor en tres partes, que pueden explicarse siguiendo una m
 
 1. **Flujo de las celdas — `cell_flow.py`:** lee el caudal real de cada bomba desde una cola de retardo. Construye las entradas `[alimentación externa, colas de celda 1, colas de celda 2]`. Por eso, un cambio de la bomba 1 afecta primero a la celda 1 y después a la 2 y la 3. Al final de la muestra guarda las nuevas órdenes para que aparezcan tras 7, 6 y 3 s, respectivamente.
 2. **Modelo matemático — `model_math.py`:** para cada celda calcula el error `e = consigna − nivel` y la nueva orden de bomba mediante PI incremental. En el modo PI + AA suma `Kff × cambio de caudal de entrada`. La orden se limita a 0–90 L/min y se aplica integración condicional si alcanza ese límite. Después actualiza el nivel con el balance de entrada menos colas, limitado a 0–45 cm.
-3. **Simulación — `simulator.py`:** define el escenario, aplica los cambios de alimentación y consigna, llama a los otros dos módulos durante cada segundo, guarda niveles y caudales y acumula `IAE = suma(|consigna − nivel| × 1 s)`. Ejecuta dos ensayos independientes desde el mismo estado inicial: PI y PI + AA. `app.py` expone ese resultado a la interfaz mediante `POST /api/simulate`; el navegador dibuja las gráficas y genera el CSV.
+3. **Simulación — `simulator.py`:** define el escenario, aplica los cambios de alimentación y consigna, llama a los otros dos módulos durante cada segundo, guarda niveles y caudales y acumula `IAE = suma(|consigna − nivel| × 1 s)`. Ejecuta dos ensayos independientes desde el mismo estado inicial: PI y PI + AA. `app.py` expone ese resultado a la interfaz React mediante `POST /api/simulate`; el navegador dibuja las gráficas y genera el CSV.
 
 La separación permite señalar en una exposición qué ecuación corresponde al nivel y al controlador, cómo viaja el caudal entre celdas y qué parte produce las curvas y el IAE. Los tres módulos ejecutan el mismo modelo de antes de esta reorganización.
 
@@ -50,7 +50,18 @@ py -3.14 -m venv .venv
 .\.venv\Scripts\python.exe app.py
 ```
 
-Abrir <http://127.0.0.1:8000>. Para detener el servidor, presionar `Ctrl+C`. Si se usa otra versión compatible de Python, sustituir `py -3.14` por su comando de instalación. No se necesita OpenPLC ni base de datos.
+Abrir <http://127.0.0.1:8000>. Para detener el servidor, presionar `Ctrl+C`. Si se usa otra versión compatible de Python, sustituir `py -3.14` por su comando de instalación. No se necesita OpenPLC ni base de datos. La carpeta `dist/` ya contiene el frontend compilado, de modo que **el docente no necesita Node.js** para ejecutar la aplicación.
+
+### Modificar la interfaz JSX
+
+**JSX** permite escribir los componentes de React con una sintaxis parecida a HTML dentro de archivos JavaScript. Vite lo transforma en JavaScript que entiende el navegador. Para editarlo se requieren Node.js y npm. Después de modificar `frontend/src/`, compilar de nuevo:
+
+```powershell
+npm ci
+npm run build
+```
+
+`npm run dev` abre el servidor de desarrollo de Vite; para que `/api/simulate` funcione, ejecutar también `app.py` en otra terminal. Vite envía las llamadas `/api` al servidor Python local. El resultado compilado se guarda en `dist/`, que se incluye en el repositorio y en el ZIP.
 
 ## Ejecutar las pruebas
 
@@ -77,5 +88,11 @@ La aplicación es un único servicio sin secretos, almacenamiento ni procesos de
 - `cell_flow.py`: retardos de bombas y caudales entre las tres celdas.
 - `simulator.py`: escenarios, bucle temporal, IAE y comparación.
 - `app.py`: servidor FastAPI y API.
-- `static/`: interfaz y gráficas sin dependencias de JavaScript externas.
+- `frontend/src/App.jsx`: estructura y navegación de los tres módulos.
+- `frontend/src/modules/`: vistas JSX de Simulación, Modelo matemático y Flujo de celdas.
+- `frontend/src/components/Charts.jsx`: gráficas interactivas con Recharts.
+- `frontend/src/components/BankVisualization.jsx`: banco gráfico con altura de pulpa proporcional al nivel calculado.
+- `frontend/src/lib/simulation.js`: adaptación de resultados para las vistas y descarga CSV.
+- `dist/`: interfaz compilada que sirve FastAPI; incluida para ejecutar sin Node.js.
+- `package.json` y `package-lock.json`: dependencias reproducibles del frontend.
 - `tests/`: verificación matemática del modelo.

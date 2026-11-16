@@ -11,8 +11,9 @@ from simulator import Scenario, compare_scenarios
 
 
 ROOT = Path(__file__).resolve().parent
+FRONTEND = ROOT / "dist"
 app = FastAPI(title="Simulador de flotación: control de nivel", version="1.0.0")
-app.mount("/static", StaticFiles(directory=ROOT / "static"), name="static")
+app.mount("/assets", StaticFiles(directory=FRONTEND / "assets"), name="assets")
 
 
 class SimulationRequest(BaseModel):
@@ -26,7 +27,12 @@ class SimulationRequest(BaseModel):
 
 @app.get("/", include_in_schema=False)
 def home() -> FileResponse:
-    return FileResponse(ROOT / "static" / "index.html")
+    return FileResponse(FRONTEND / "index.html")
+
+
+@app.get("/favicon.svg", include_in_schema=False)
+def favicon() -> FileResponse:
+    return FileResponse(FRONTEND / "favicon.svg", media_type="image/svg+xml")
 
 
 @app.get("/api/health")
