@@ -1,6 +1,6 @@
 # Simulador de control de nivel en tres celdas de flotación
 
-Aplicación web en español que compara control **PI** y **PI con alimentación anticipativa (PI + AA)** para tres celdas en serie. El motor está escrito en Python; la interfaz permite modificar consignas y alimentación, examinar seis gráficas y descargar los datos en CSV. El mismo `app.py` se ejecuta localmente y en Vercel.
+Aplicación web en español que compara control **PI** y **PI con alimentación anticipativa (PI + AA)** para tres celdas en serie. El motor está escrito en Python; la interfaz permite modificar consignas y alimentación, examinar seis gráficas y descargar los datos en CSV. El mismo `app.py` se ejecuta localmente y en Render.
 
 ## Base matemática y procedencia
 
@@ -42,13 +42,16 @@ Abrir <http://127.0.0.1:8000>. Para detener el servidor, presionar `Ctrl+C`. Si 
 
 Se verifican el equilibrio, el signo y retardo de la respuesta, la conexión en serie, los límites y la comparación IAE del escenario predeterminado.
 
-## Publicar en Vercel
+## Publicar en Render
 
 1. Crear un repositorio nuevo en GitHub y subir todos los archivos de esta carpeta, excepto `.venv` y archivos ignorados por `.gitignore`.
-2. En <https://vercel.com/new>, importar el repositorio con el directorio raíz del proyecto. Vercel detecta `app.py` como aplicación FastAPI y `.python-version` fija Python 3.14.
-3. Desplegar y abrir la URL HTTPS generada. Verificar `/api/health` (debe responder `{"status":"ok"}`), ejecutar el escenario inicial y descargar su CSV.
+2. En <https://dashboard.render.com/create>, elegir **Web Service** y conectar ese repositorio. Seleccionar la rama `main`, el directorio raíz del repositorio y **Language: Python 3**. El archivo `.python-version` fija Python 3.14.
+3. Configurar **Build Command**: `pip install -r requirements.txt`.
+4. Configurar **Start Command**: `uvicorn app:app --host 0.0.0.0 --port $PORT`. El nombre del archivo es `app.py`, por eso se usa `app:app`.
+5. Elegir el plan **Free** si está disponible y no se necesita disponibilidad continua. Crear el servicio y esperar a que el despliegue termine.
+6. Abrir la URL HTTPS `https://<nombre-del-servicio>.onrender.com` indicada por Render. Verificar `/api/health` (debe responder `{"status":"ok"}`), ejecutar el escenario inicial y descargar su CSV.
 
-La aplicación es un único servicio sin secretos, almacenamiento ni procesos de fondo. El endpoint `POST /api/simulate` recibe la configuración del ensayo y calcula ambos modos desde el mismo estado inicial. `GET /api/health` permite comprobar el despliegue.
+La aplicación es un único servicio sin secretos, almacenamiento ni procesos de fondo. El endpoint `POST /api/simulate` recibe la configuración del ensayo y calcula ambos modos desde el mismo estado inicial. `GET /api/health` permite comprobar el despliegue. En el plan Free, Render puede suspender el servicio tras 15 minutos sin tráfico; la primera visita posterior puede tardar alrededor de un minuto mientras se reactiva.
 
 ## Estructura
 

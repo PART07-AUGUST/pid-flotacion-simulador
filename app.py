@@ -1,4 +1,4 @@
-"""FastAPI entry point for local execution and Vercel deployment."""
+"""FastAPI entry point for local execution and Render deployment."""
 
 from pathlib import Path
 
