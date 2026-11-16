@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
-import { Activity, ArrowUpRight, FlaskConical, GitBranch, Sigma } from "lucide-react";
+import { Activity, FlaskConical, GitBranch, Sigma } from "lucide-react";
 import SimulationModule from "./modules/SimulationModule.jsx";
 import ModelModule from "./modules/ModelModule.jsx";
 import FlowModule from "./modules/FlowModule.jsx";
 import { downloadResults, initialForm, scenarioFromForm } from "./lib/simulation.js";
 
 const modules = [
-  { id: "simulation", number: "01", label: "Simulación", detail: "Ensayos y resultados", icon: Activity },
-  { id: "model", number: "02", label: "Modelo matemático", detail: "Ecuaciones y parámetros", icon: Sigma },
-  { id: "flow", number: "03", label: "Flujo de celdas", detail: "Recorrido y retardos", icon: GitBranch }
+  { id: "simulation", label: "Simulación", icon: Activity },
+  { id: "model", label: "Modelo matemático", icon: Sigma },
+  { id: "flow", label: "Flujo de celdas", icon: GitBranch }
 ];
 
 export default function App() {
@@ -60,34 +60,28 @@ export default function App() {
   function showModule(id) {
     window.history.replaceState(null, "", `#${id}`);
     setModule(id);
+    window.scrollTo(0, 0);
   }
 
   return (
     <div className="app-shell">
-      <aside className="app-sidebar">
+      <header className="app-header">
         <div className="brand"><span className="brand-icon"><FlaskConical size={21} strokeWidth={2} /></span><span>FLOTACIÓN<span className="brand-muted"> / LAB</span></span></div>
-        <div className="sidebar-label">EXPLORAR EL MODELO</div>
         <nav className="module-nav" aria-label="Módulos principales">
           {modules.map(item => {
             const Icon = item.icon;
             return (
               <button key={item.id} type="button" className={`module-link ${module === item.id ? "selected" : ""}`} aria-current={module === item.id ? "page" : undefined} onClick={() => showModule(item.id)}>
-                <span className="module-icon"><Icon size={19} strokeWidth={1.8} /></span>
-                <span className="module-link-text"><strong>{item.label}</strong><small>{item.detail}</small></span>
-                <span className="module-number">{item.number}</span>
+                <Icon size={18} strokeWidth={1.8} aria-hidden="true" />
+                <span>{item.label}</span>
               </button>
             );
           })}
         </nav>
-        <div className="sidebar-bottom">
-          <div className="system-card"><span className="system-dot" /><div><strong>Motor de simulación</strong><small>Python · 3 celdas · Δt = 1 s</small></div></div>
-          <p>Basado en Quintanilla et al., MethodsX 10 (2023) 102081.</p>
-          <a href="https://doi.org/10.1016/j.mex.2023.102081" target="_blank" rel="noopener noreferrer">Consultar artículo <ArrowUpRight size={14} /></a>
-        </div>
-      </aside>
+        <div className="header-context">3 CELDAS <span>·</span> Δt = 1 s</div>
+      </header>
 
       <div className="workspace">
-        <header className="workspace-topbar"><span>SIMULADOR DE CONTROL DE NIVEL</span><div><span className="topbar-pulse" /> BANCO DE FLOTACIÓN · 3 CELDAS</div></header>
         <main id="main-content" className="workspace-main">
           {module === "simulation" && (
             <SimulationModule form={form} setForm={setForm} result={result} busy={busy} error={error} onSubmit={submit} onDownload={() => result && downloadResults(result)} onOpenFlow={() => showModule("flow")} />

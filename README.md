@@ -8,7 +8,7 @@ Aplicación web en español que compara control **PI** y **PI con alimentación 
 - **Modelo matemático:** presenta la función de transferencia, el balance de nivel, la ley PI + alimentación anticipativa, el IAE, los parámetros por celda y los supuestos.
 - **Flujo de celdas:** muestra un banco esquemático con el nivel de pulpa, bombas y tuberías. Permite escoger PI o PI + AA y mover un control de tiempo para leer, en un segundo concreto, los niveles, entradas, órdenes de bomba y caudales reales. También muestra las tres gráficas de caudal.
 
-Los tres módulos usan los mismos resultados calculados por Python al ejecutar el ensayo. Al cambiar de módulo no se recalcula el modelo; al pulsar **Ejecutar simulación** sí se calculan de nuevo ambos escenarios. Cada vista tiene una URL interna compartible: `/#simulation`, `/#model` y `/#flow`.
+Los tres módulos se eligen desde la barra de navegación superior y usan los mismos resultados calculados por Python al ejecutar el ensayo. Al cambiar de módulo no se recalcula el modelo; al pulsar **Ejecutar simulación** sí se calculan de nuevo ambos escenarios. Cada vista tiene una URL interna compartible: `/#simulation`, `/#model` y `/#flow`.
 
 ## Base matemática y procedencia
 
