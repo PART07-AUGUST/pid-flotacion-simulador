@@ -95,10 +95,11 @@
       </section>
 
       <section class="method-card">
-        <div class="method-intro"><div class="eyebrow">BASE CIENTÍFICA</div><h2>Modelo y sintonización</h2><p>Los valores de ganancia, retardo y PI proceden de la identificación experimental del artículo. La simulación convierte esas relaciones a pasos de un segundo y conecta las celdas por sus caudales.</p><a href="https://doi.org/10.1016/j.mex.2023.102081" target="_blank" rel="noopener">Leer artículo científico ↗</a></div>
+        <div class="method-intro"><div class="eyebrow">BASE CIENTÍFICA</div><h2>Modelo y sintonización</h2><p>Los valores de ganancia, retardo y PI proceden de la identificación experimental del artículo. La simulación convierte esas relaciones a pasos de un segundo y conecta las celdas por sus caudales.</p><p><strong>Modelo matemático:</strong> calcula el nuevo nivel y la orden PI de cada celda. <strong>Flujo de celdas:</strong> aplica los retardos y pasa las colas de una celda a la siguiente. <strong>Simulación:</strong> repite ambos cálculos cada segundo para PI y PI + AA, y acumula el IAE.</p><a href="https://doi.org/10.1016/j.mex.2023.102081" target="_blank" rel="noopener">Leer artículo científico ↗</a></div>
         <div class="method-details">
           <div class="formula"><span>MODELO DE CADA CELDA</span><code>G<sub>i</sub>(s) = −0,001018 · e<sup>−θ<sub>i</sub>s</sup> / s</code></div>
           <div class="formula"><span>BALANCE DISCRETO · Δt = 1 s</span><code>h<sub>i</sub>[k+1] = h<sub>i</sub>[k] + 0,001018 · (Q<sub>entrada,i</sub>[k] − Q<sub>colas,i</sub>[k])</code></div>
+          <div class="formula"><span>FLUJO ENTRE CELDAS</span><code>Q<sub>entrada,2</sub> = Q<sub>colas,1</sub> ; Q<sub>entrada,3</sub> = Q<sub>colas,2</sub></code></div>
           <div class="formula"><span>CONTROL PI + ALIMENTACIÓN ANTICIPATIVA</span><code>Δu<sub>i</sub> = K<sub>c,i</sub> · (Δe<sub>i</sub> + e<sub>i</sub>/T<sub>i,i</sub>) + K<sub>ff,i</sub> · ΔQ<sub>entrada,i</sub></code></div>
           <table><thead><tr><th>Parámetro</th><th>Celda 1</th><th>Celda 2</th><th>Celda 3</th></tr></thead><tbody><tr><td>Retardo θ (s)</td><td>7</td><td>6</td><td>3</td></tr><tr><td>K<sub>c</sub> (L/min·cm)</td><td>−62</td><td>−76</td><td>−85</td></tr><tr><td>T<sub>i</sub> (s)</td><td>56</td><td>30</td><td>44</td></tr><tr><td>K<sub>ff</sub></td><td>0,8</td><td>0,8</td><td>1,0</td></tr></tbody></table>
         </div>

@@ -22,6 +22,16 @@ Para PI solo, `Kff_i = 0`. Para PI + AA, `Kff = (0.8, 0.8, 1)`. Las ganancias fi
 
 **Supuestos necesarios para completar el modelo:** los niveles iniciales de 30 / 33,5 / 33 cm y las consignas finales de 28,5 / 32,5 / 32 cm son lecturas aproximadas de la figura 14, no valores numéricos tabulados. El ejemplo incorpora un cambio externo de alimentación de +8 L/min a los 180 s para ilustrar el rechazo de perturbaciones; el artículo mantuvo la alimentación de la primera celda en 45 L/min en su ensayo de validación. Se suponen altura máxima de 45 cm, capacidad de cada bomba de 0 a 90 L/min y magnitud simétrica de la ganancia identificada para perturbaciones de entrada y salida. El artículo no aporta todos esos valores como parámetros de una simulación reproducible. Por ello, las curvas y los IAE de esta aplicación son **resultados simulados**, no los datos experimentales ni las cifras de su figura 14. No se modelan recuperación, ley de concentrado ni cinética mineral.
 
+## Cómo se calcula cada segundo
+
+El código divide el motor en tres partes, que pueden explicarse siguiendo una muestra `k`:
+
+1. **Flujo de las celdas — `cell_flow.py`:** lee el caudal real de cada bomba desde una cola de retardo. Construye las entradas `[alimentación externa, colas de celda 1, colas de celda 2]`. Por eso, un cambio de la bomba 1 afecta primero a la celda 1 y después a la 2 y la 3. Al final de la muestra guarda las nuevas órdenes para que aparezcan tras 7, 6 y 3 s, respectivamente.
+2. **Modelo matemático — `model_math.py`:** para cada celda calcula el error `e = consigna − nivel` y la nueva orden de bomba mediante PI incremental. En el modo PI + AA suma `Kff × cambio de caudal de entrada`. La orden se limita a 0–90 L/min y se aplica integración condicional si alcanza ese límite. Después actualiza el nivel con el balance de entrada menos colas, limitado a 0–45 cm.
+3. **Simulación — `simulator.py`:** define el escenario, aplica los cambios de alimentación y consigna, llama a los otros dos módulos durante cada segundo, guarda niveles y caudales y acumula `IAE = suma(|consigna − nivel| × 1 s)`. Ejecuta dos ensayos independientes desde el mismo estado inicial: PI y PI + AA. `app.py` expone ese resultado a la interfaz mediante `POST /api/simulate`; el navegador dibuja las gráficas y genera el CSV.
+
+La separación permite señalar en una exposición qué ecuación corresponde al nivel y al controlador, cómo viaja el caudal entre celdas y qué parte produce las curvas y el IAE. Los tres módulos ejecutan el mismo modelo de antes de esta reorganización.
+
 ## Ejecutar en Windows
 
 Requiere Python **3.14**. En PowerShell, dentro de esta carpeta:
@@ -44,7 +54,7 @@ Se verifican el equilibrio, el signo y retardo de la respuesta, la conexión en 
 
 ## Publicar en Render
 
-1. Crear un repositorio nuevo en GitHub y subir todos los archivos de esta carpeta, excepto `.venv` y archivos ignorados por `.gitignore`.
+1. Usar el repositorio público <https://github.com/PART07-AUGUST/pid-flotacion-simulador>. Los cambios locales posteriores deben subirse a la rama `main` antes de actualizar Render.
 2. En <https://dashboard.render.com/create>, elegir **Web Service** y conectar ese repositorio. Seleccionar la rama `main`, el directorio raíz del repositorio y **Language: Python 3**. El archivo `.python-version` fija Python 3.14.
 3. Configurar **Build Command**: `pip install -r requirements.txt`.
 4. Configurar **Start Command**: `uvicorn app:app --host 0.0.0.0 --port $PORT`. El nombre del archivo es `app.py`, por eso se usa `app:app`.
@@ -55,7 +65,9 @@ La aplicación es un único servicio sin secretos, almacenamiento ni procesos de
 
 ## Estructura
 
-- `simulator.py`: ecuaciones, controladores y comparación.
+- `model_math.py`: parámetros, balance de nivel y controlador PI/PI + AA.
+- `cell_flow.py`: retardos de bombas y caudales entre las tres celdas.
+- `simulator.py`: escenarios, bucle temporal, IAE y comparación.
 - `app.py`: servidor FastAPI y API.
 - `static/`: interfaz y gráficas sin dependencias de JavaScript externas.
 - `tests/`: verificación matemática del modelo.

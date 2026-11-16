@@ -1,28 +1,24 @@
-"""Discrete level-control model for three flotation cells in series.
-
-The identified pump-to-level model and PI settings come from Quintanilla et al.
-(MethodsX 10, 2023, 102081). Flow limits, initial levels, and the symmetric
-inlet-flow gain are explicit simulation assumptions, not measured article data.
-"""
+"""Ejecuta escenarios PI y PI+AA y reúne las series para la interfaz web."""
 
 from __future__ import annotations
 
-from collections import deque
 from dataclasses import asdict, dataclass
 
-
-SAMPLE_S = 1
-GAIN_CM_PER_S_LPM = 0.001018
-DELAYS_S = (7, 6, 3)
-KC_LPM_PER_CM = (-62.0, -76.0, -85.0)
-TI_S = (56.0, 30.0, 44.0)
-KFF = (0.8, 0.8, 1.0)
-
-# Assumptions used to complete the published empirical transfer functions.
-INITIAL_LEVELS_CM = (30.0, 33.5, 33.0)
-MAX_LEVEL_CM = 45.0
-MIN_PUMP_LPM = 0.0
-MAX_PUMP_LPM = 90.0
+from cell_flow import CellFlow
+from model_math import (
+    DELAYS_S,
+    GAIN_CM_PER_S_LPM,
+    INITIAL_LEVELS_CM,
+    KC_LPM_PER_CM,
+    KFF,
+    MAX_LEVEL_CM,
+    MAX_PUMP_LPM,
+    MIN_PUMP_LPM,
+    SAMPLE_S,
+    TI_S,
+    next_level,
+    next_pump_command,
+)
 
 
 @dataclass(frozen=True)
@@ -53,10 +49,6 @@ class Scenario:
             raise ValueError("Indica tres consignas entre 5 y 40 cm.")
 
 
-def _clip(value: float, minimum: float, maximum: float) -> float:
-    return max(minimum, min(maximum, value))
-
-
 def run_scenario(
     scenario: Scenario,
     mode: str,
@@ -76,7 +68,7 @@ def run_scenario(
 
     levels = list(INITIAL_LEVELS_CM)
     commands = [scenario.feed_lpm] * 3
-    histories = [deque([scenario.feed_lpm] * delay) for delay in DELAYS_S]
+    flow = CellFlow.at_equilibrium(scenario.feed_lpm)
     previous_errors = [0.0] * 3
     previous_inlets = [scenario.feed_lpm] * 3
     iae = [0.0] * 3
@@ -96,30 +88,23 @@ def run_scenario(
             else INITIAL_LEVELS_CM[i]
             for i in range(3)
         ]
-        tailings = [history.popleft() for history in histories]
-        inlets = [feed, tailings[0], tailings[1]]
+        inlets, tailings = flow.read_flows(feed)
 
         for i in range(3):
             error = setpoints[i] - levels[i]
             if closed_loop:
-                proportional = KC_LPM_PER_CM[i] * (error - previous_errors[i])
-                integral = KC_LPM_PER_CM[i] * SAMPLE_S / TI_S[i] * error
-                anticipation = (
-                    KFF[i] * (inlets[i] - previous_inlets[i])
-                    if mode == "pi_ff" else 0.0
+                commands[i] = next_pump_command(
+                    i,
+                    commands[i],
+                    error,
+                    previous_errors[i],
+                    inlets[i],
+                    previous_inlets[i],
+                    feedforward=(mode == "pi_ff"),
                 )
-                proposal = commands[i] + proportional + integral + anticipation
-                # Conditional integration prevents the integral increment from
-                # driving an already saturated pump further into saturation.
-                if (proposal < MIN_PUMP_LPM and integral < 0.0) or (
-                    proposal > MAX_PUMP_LPM and integral > 0.0
-                ):
-                    proposal -= integral
-                commands[i] = _clip(proposal, MIN_PUMP_LPM, MAX_PUMP_LPM)
 
             previous_errors[i] = error
             previous_inlets[i] = inlets[i]
-            histories[i].append(commands[i])
 
             series["levels_cm"][i].append(round(levels[i], 6))
             series["inlets_lpm"][i].append(round(inlets[i], 6))
@@ -129,14 +114,10 @@ def run_scenario(
             if second < scenario.duration_s:
                 iae[i] += abs(error) * SAMPLE_S
 
+        flow.write_commands(commands)
         if second < scenario.duration_s:
             for i in range(3):
-                levels[i] = _clip(
-                    levels[i] + SAMPLE_S * GAIN_CM_PER_S_LPM
-                    * (inlets[i] - tailings[i]),
-                    0.0,
-                    MAX_LEVEL_CM,
-                )
+                levels[i] = next_level(levels[i], inlets[i], tailings[i])
 
     return {
         **series,
